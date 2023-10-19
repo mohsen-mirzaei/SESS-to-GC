@@ -60,13 +60,22 @@ persian_to_english = dict(zip(persian_weekdays, english_weekdays))
 
 with open("schedule.txt", "w", encoding="utf-8") as file:
     for weekday in persian_weekdays_sorted:
+        weekday_classes = []
         file.write(weekday + "\n")
         for item in classes:
             for combo in item.get("class_time"):
                 item_day = combo.get("day")
                 if item_day == weekday:
-                    file.write(item.get("class_name")  + "   " + combo.get("hour")[0] + "-" + combo.get("hour")[1] + "\n")
-
+                    line_data = item.get("class_name") + " * " + combo.get("hour")[0] + "-" + combo.get("hour")[1] + "\n"
+                    class_start_time = int(combo.get("hour")[0].split(":")[0])
+                    weekday_classes.append({
+                        "class_start_time": class_start_time,
+                        "line_data": line_data
+                    })
+                    print("sort by" + str(class_start_time) + "|" + line_data)
+        weekday_classes = sorted(weekday_classes, key=lambda x: x['class_start_time'])
+        for weekday_class in weekday_classes:
+            file.write(weekday_class.get("line_data"))
 
 
 # Close the browser window
