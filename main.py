@@ -6,8 +6,6 @@ from pprint import pprint
 import os
 import calendar
 
-
-
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 
