@@ -1,7 +1,9 @@
+import csv
 from unidecode import unidecode
 import calendar
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+import datetime
 
 
 driver = webdriver.Chrome()
@@ -35,10 +37,46 @@ for i in range(1, num_of_classes + 1):
         "class_time": class_time_clean
     })
 
-persian_weekdays = ['دو شنبه', 'سه شنبه', 'چهار شنبه', 'پنجشنبه', 'جمعه', 'شنبه', 'یک شنبه']
+persian_weekdays = ['دو شنبه', 'سه شنبه', 'چهار شنبه', 'پنجشنبه', 'جمعه', 'شنبه', 'يک شنبه']
 persian_weekdays_sorted = ['شنبه', 'يک شنبه', 'دو شنبه', 'سه شنبه', 'چهار شنبه', 'پنج ‌شنبه', 'جمعه']
 english_weekdays = list(calendar.day_name)
 persian_to_english = dict(zip(persian_weekdays, english_weekdays))
+
+
+def next_weekday(d, weekday):
+    days_ahead = weekday - d.weekday()
+    if days_ahead <= 0: # Target day already happened this week
+        days_ahead += 7
+    return d + datetime.timedelta(days_ahead)
+
+
+week_events = []
+for item in classes:
+    class_name = item.get("class_name")
+    for item2 in item.get("class_time"):
+        date = next_weekday(datetime.datetime.today(), persian_weekdays.index(item2.get("day")))
+        event = {"Subject": class_name,
+                 "Start Date": date,
+                 "Start Time": datetime.datetime.strptime(item2.get("hour")[0], "%H:%M").strftime("%I:%M %p"),
+                 "End Date": date,
+                 "End Time": datetime.datetime.strptime(item2.get("hour")[1], "%H:%M").strftime("%I:%M %p")
+                 }
+        week_events.append(event)
+
+
+semester_events = []
+for event in week_events:
+    while event.get("Start Date") < datetime.datetime.today() + datetime.timedelta(days=200):
+        cr_event = event.copy()
+        cr_event["Start Date"] = cr_event["Start Date"].strftime("%m/%d/%Y")
+        cr_event["End Date"] = cr_event["End Date"].strftime("%m/%d/%Y")
+        semester_events.append(cr_event)
+        event["Start Date"] = event.get("Start Date") + datetime.timedelta(weeks=1)
+
+with open("sch.csv", 'w', encoding="utf-8") as csvfile:
+    writer = csv.DictWriter(csvfile, fieldnames=['End Date', 'End Time', 'Start Date', 'Start Time', 'Subject'])
+    writer.writeheader()
+    writer.writerows(semester_events)
 
 
 with open("schedule.txt", "w", encoding="utf-8") as file:
