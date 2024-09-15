@@ -72,6 +72,7 @@ for event in week_events:
         cr_event["End Date"] = cr_event["End Date"].strftime("%m/%d/%Y")
         semester_events.append(cr_event)
         event["Start Date"] = event.get("Start Date") + datetime.timedelta(weeks=1)
+        event["End Date"] = event.get("End Date") + datetime.timedelta(weeks=1)
 
 with open("sch.csv", 'w', encoding="utf-8") as csvfile:
     writer = csv.DictWriter(csvfile, fieldnames=['End Date', 'End Time', 'Start Date', 'Start Time', 'Subject'])
